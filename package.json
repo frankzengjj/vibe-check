@@ -1,0 +1,49 @@
+{
+  "name": "vibe-check",
+  "version": "0.1.0",
+  "description": "CLI tool that quizzes you on your git diff before pushing — fight comprehension debt from vibe coding",
+  "type": "module",
+  "bin": {
+    "vbc": "./dist/bin/vibe-check.js"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint . --ext .ts",
+    "format": "prettier --write .",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "git",
+    "hook",
+    "ai",
+    "code-review",
+    "comprehension",
+    "vibe-coding",
+    "cli"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "files": [
+    "dist",
+    "hooks"
+  ],
+  "dependencies": {
+    "chalk": "^5.6.2",
+    "commander": "^14.0.3",
+    "ora": "^9.3.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "eslint": "^10.1.0",
+    "prettier": "^3.8.1",
+    "tsup": "^8.5.1",
+    "typescript": "^6.0.2",
+    "vitest": "^4.1.1"
+  }
+}
