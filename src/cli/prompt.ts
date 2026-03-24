@@ -1,4 +1,4 @@
-import { createReadStream } from "node:fs";
+import { createReadStream, openSync, closeSync } from "node:fs";
 import { createInterface, type Interface } from "node:readline";
 import type { Question } from "../ai/types.js";
 
@@ -19,9 +19,8 @@ function writeln(text: string): void {
 export function isTTYAvailable(): boolean {
   try {
     const ttyPath = process.platform === "win32" ? "CON" : "/dev/tty";
-    const fs = require("node:fs");
-    const fd = fs.openSync(ttyPath, "r");
-    fs.closeSync(fd);
+    const fd = openSync(ttyPath, "r");
+    closeSync(fd);
     return true;
   } catch {
     return false;
@@ -63,6 +62,8 @@ export async function runQuiz(
 
   try {
     writeln("");
+    writeln("  (type 'q' or 'exit' at any prompt to abort the push)");
+    writeln("");
     for (let i = 0; i < questions.length; i++) {
       const q = questions[i];
       writeln(`Q${i + 1}: ${q.text}`);
@@ -70,6 +71,10 @@ export async function runQuiz(
         writeln(`   (${q.file}:${q.lineRange})`);
       }
       const answer = await askQuestion(rl, "> ");
+      if (answer === "q" || answer === "exit") {
+        writeln("\n[vibe-check] Aborted. Push blocked.");
+        process.exit(1);
+      }
       results.push({ questionId: q.id, answer });
       writeln("");
     }

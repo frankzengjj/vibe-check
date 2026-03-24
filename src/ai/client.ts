@@ -17,7 +17,7 @@ export class AIClient {
     this.model = config.model;
   }
 
-  async chat(messages: ChatMessage[], jsonMode = false): Promise<string> {
+  async chat(messages: ChatMessage[]): Promise<string> {
     const url = `${this.baseUrl}/chat/completions`;
 
     const body: Record<string, unknown> = {
@@ -25,10 +25,6 @@ export class AIClient {
       messages,
       temperature: 0.3,
     };
-
-    if (jsonMode) {
-      body.response_format = { type: "json_object" };
-    }
 
     const response = await fetch(url, {
       method: "POST",

@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import { resolve, join } from "node:path";
 import { homedir } from "node:os";
 import { partialConfigSchema, type VibeCheckConfig } from "./schema.js";
@@ -17,15 +17,14 @@ async function readJsonFile(path: string): Promise<unknown | null> {
   }
 }
 
-function findProjectRoot(startDir: string): string | null {
+async function findProjectRoot(startDir: string): Promise<string | null> {
   let dir = resolve(startDir);
   const root = resolve("/");
 
   while (dir !== root) {
     try {
-      // Sync check is fine here — runs once at startup
-      const { statSync } = require("node:fs");
-      if (statSync(join(dir, ".git")).isDirectory()) return dir;
+      const s = await stat(join(dir, ".git"));
+      if (s.isDirectory()) return dir;
     } catch {
       // not found, keep looking
     }
@@ -79,7 +78,7 @@ export async function loadConfig(
   }
 
   // Layer 2: Project-level config
-  const projectRoot = findProjectRoot(cwd);
+  const projectRoot = await findProjectRoot(cwd);
   if (projectRoot) {
     const projectConfig = await readJsonFile(
       join(projectRoot, PROJECT_CONFIG_NAME),

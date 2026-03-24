@@ -26,16 +26,22 @@ function write(text: string): void {
   process.stderr.write(text + "\n");
 }
 
+function extractJSON(text: string): string {
+  const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (fenceMatch) return fenceMatch[1].trim();
+  return text.trim();
+}
+
 async function generateQuestions(
   client: AIClient,
   diffText: string,
   count: number,
 ): Promise<Question[]> {
   const messages = buildGeneratePrompt(diffText, count);
-  const response = await client.chat(messages, true);
+  const response = await client.chat(messages);
 
   try {
-    const parsed = JSON.parse(response);
+    const parsed = JSON.parse(extractJSON(response));
     return parsed.questions || [];
   } catch {
     // If JSON parsing fails, retry once with a nudge
@@ -44,11 +50,11 @@ async function generateQuestions(
       { role: "assistant" as const, content: response },
       {
         role: "user" as const,
-        content: "Please respond with valid JSON only, in the exact format specified.",
+        content: "Please respond with raw JSON only (no markdown, no code fences), in the exact format specified.",
       },
     ];
-    const retryResponse = await client.chat(retryMessages, true);
-    const parsed = JSON.parse(retryResponse);
+    const retryResponse = await client.chat(retryMessages);
+    const parsed = JSON.parse(extractJSON(retryResponse));
     return parsed.questions || [];
   }
 }
@@ -59,10 +65,10 @@ async function evaluateAnswer(
   answer: string,
 ): Promise<Evaluation> {
   const messages = buildEvaluatePrompt(question, answer);
-  const response = await client.chat(messages, true);
+  const response = await client.chat(messages);
 
   try {
-    const parsed = JSON.parse(response);
+    const parsed = JSON.parse(extractJSON(response));
     return {
       questionId: question.id,
       passed: !!parsed.passed,
